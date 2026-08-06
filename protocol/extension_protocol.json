@@ -1,0 +1,68 @@
+{
+  "frozen_at_pdt": "2026-08-05",
+  "status": "post_protocol_validation_frozen_before_model_scoring_and_stock_outcome_retrieval",
+  "purpose": "Reviewer-motivated external-renderer, cheap-repair, and cross-universe validation of the unchanged frozen models and training conditions.",
+  "external_renderers": {
+    "shared_input": "The original fixed tanh price coordinates and within-window normalized log volume; no axes, ticker, date, or absolute-price text.",
+    "output": "Each library rasterizes at 192 by 192 pixels; Pillow LANCZOS downsamples once to the frozen model input of 64 by 64 RGB pixels.",
+    "compositions": [
+      {
+        "name": "mplfinance_yahoo_wide",
+        "library": "mplfinance",
+        "theme": "yahoo",
+        "price_to_volume_panel_ratio": [2, 1],
+        "candle_width": 1.1,
+        "candle_linewidth": 0.35,
+        "volume_width": 0.95
+      },
+      {
+        "name": "mplfinance_nightclouds_thin",
+        "library": "mplfinance",
+        "theme": "nightclouds",
+        "price_to_volume_panel_ratio": [7, 1],
+        "candle_width": 0.28,
+        "candle_linewidth": 2.2,
+        "volume_width": 0.45
+      },
+      {
+        "name": "plotly_white_narrow_volume",
+        "library": "plotly",
+        "theme": "plotly_white",
+        "price_to_volume_panel_ratio": [9, 1],
+        "candle_linewidth": 3.0,
+        "whiskerwidth": 1.0,
+        "bar_gap": 0.55
+      }
+    ],
+    "evaluation": "No retraining. Score the frozen rgb_canonical and rgb_aug_consistency checkpoints on the frozen 2026 ETF examples. Select the worst external renderer separately for each method by ensemble mean absolute paired drift from its hand-rendered canonical prediction."
+  },
+  "cheap_repairs": {
+    "grayscale_background_contrast": "At inference only, convert both canonical and alternate images to luminance, invert when border luminance is below 0.5, map border median to white, scale by the 99th percentile absolute border deviation, clip, and replicate to three channels.",
+    "affine_output_calibration": "For each frozen rgb_canonical seed and each of canonical and dark rendering, fit ordinary least squares target = intercept + slope * prediction on origins from 2022-01-01 through 2025-12-31. Apply the two renderer-specific maps unchanged in 2026.",
+    "evaluation": "Report alternate-render MAE, mean absolute paired drift, and high-volatility threshold flip rate for seed-ensemble predictions."
+  },
+  "stock_replication": {
+    "status": "post_protocol_replication",
+    "source": "S&P 100 component table retrieved from https://en.wikipedia.org/wiki/S%26P_100 on 2026-08-05; the index contains 101 securities for 100 companies.",
+    "symbols_requested": [
+      "AAPL", "ABBV", "ABT", "ACN", "ADBE", "AMAT", "AMD", "AMGN", "AMT", "AMZN",
+      "AVGO", "AXP", "BA", "BAC", "BKNG", "BLK", "BMY", "BNY", "BRK-B", "C",
+      "CAT", "CL", "CMCSA", "COF", "COP", "COST", "CRM", "CSCO", "CVS", "CVX",
+      "DE", "DHR", "DIS", "DUK", "EMR", "FDX", "GD", "GE", "GEV", "GILD",
+      "GM", "GOOG", "GOOGL", "GS", "HD", "HONA", "IBM", "INTC", "INTU", "ISRG",
+      "JNJ", "JPM", "KO", "LIN", "LLY", "LMT", "LOW", "LRCX", "MA", "MCD",
+      "MDLZ", "MDT", "META", "MMM", "MO", "MRK", "MS", "MSFT", "MU", "NEE",
+      "NFLX", "NKE", "NOW", "NVDA", "ORCL", "PEP", "PFE", "PG", "PLTR", "PM",
+      "QCOM", "RTX", "SBUX", "SCHW", "SO", "SPG", "T", "TMO", "TMUS", "TSLA",
+      "TXN", "UBER", "UNH", "UNP", "UPS", "USB", "V", "VZ", "WFC", "WMT", "XOM"
+    ],
+    "yahoo_symbol_translation": "BRK.B is requested from Yahoo as BRK-B.",
+    "minimum_valid_daily_rows": 500,
+    "data_window_and_task": "Same requested dates, adjustment, 20-session input, five-session target, weekly stride, fit boundary, and final 2026 test as the frozen ETF protocol.",
+    "models": ["rgb_canonical", "rgb_aug_consistency"],
+    "seeds": [2026, 2027, 2028],
+    "epochs": 10,
+    "evaluation_styles": ["canonical", "dark"],
+    "reporting": "Report only the two conditions in the manuscript; retain full predictions and all seed results in the artifact."
+  }
+}

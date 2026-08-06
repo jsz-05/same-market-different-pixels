@@ -1,0 +1,81 @@
+{
+  "frozen_at_pdt": "2026-08-05",
+  "status": "frozen_before_2026_outcome_retrieval",
+  "research_question": "Can training make lightweight financial vision predictors invariant to information-equivalent chart renderers, including a renderer held out from training?",
+  "data": {
+    "source": "Yahoo Finance chart endpoint, credential-free",
+    "symbols": [
+      "SPY", "QQQ", "IWM", "EFA", "EEM", "VEA", "VWO", "EWJ", "EWG", "EWU",
+      "EWZ", "FXI", "TLT", "IEF", "SHY", "TIP", "LQD", "HYG", "EMB", "AGG",
+      "GLD", "SLV", "USO", "DBA", "GDX", "VNQ", "XLF", "XLK", "XLE", "XLI",
+      "XLP", "XLY", "XLV", "XLU", "XLB", "UUP", "FXE"
+    ],
+    "requested_start": "2010-01-01",
+    "requested_end_exclusive": "2026-08-01",
+    "fit_rule": "target_end_date < 2026-01-01",
+    "final_test_rule": "origin_date >= 2026-01-01",
+    "development_disclosure": "2022-2025 outcomes were inspected and are development, never final test"
+  },
+  "task": {
+    "lookback_sessions": 20,
+    "forecast_horizon_sessions": 5,
+    "origin_stride_sessions": 5,
+    "target": "log annualized five-session realized volatility from adjusted closes",
+    "inputs": "split/dividend-adjusted OHLC and within-window normalized log volume",
+    "high_volatility_cutoff": "80th percentile of fitting targets"
+  },
+  "renderer": {
+    "resolution": [64, 64],
+    "price_map": "tanh(log(price / first_close) / (0.10 * (1 + 2 * padding)))",
+    "evaluation_styles": ["canonical", "reversed", "dark", "monochrome", "blue_orange"],
+    "discrete_training_styles": ["canonical", "reversed", "dark", "monochrome"],
+    "held_out_style": "blue_orange",
+    "procedural_training_ranges": {
+      "body_scale": [0.65, 1.35],
+      "price_padding": [0.0, 0.14]
+    }
+  },
+  "models": {
+    "neural": [
+      "rgb_canonical",
+      "rgb_style_augmented",
+      "rgb_paired_consistency",
+      "rgb_aug_consistency",
+      "edge_canonical",
+      "resnet_canonical",
+      "resnet_aug_consistency"
+    ],
+    "numeric_twins": ["numeric_ridge", "numeric_histgb", "rv5_persistence"],
+    "consistency_weight": 0.5,
+    "epochs": 10,
+    "seeds": [2026, 2027, 2028]
+  },
+  "primary_metrics": [
+    "MAE of log realized volatility",
+    "QLIKE",
+    "Spearman rank correlation",
+    "high-volatility AUC",
+    "paired mean absolute prediction drift from canonical",
+    "paired prediction correlation",
+    "high-volatility decision-flip rate"
+  ],
+  "inference": {
+    "unit": "paired forecast origin and asset",
+    "confidence_intervals": "calendar-date block bootstrap with asset resampling sensitivity",
+    "primary_contrasts": [
+      "canonical model: canonical versus each alternate renderer",
+      "each intervention versus canonical training on renderer-induced drift",
+      "seen alternate renderers versus held-out blue_orange renderer"
+    ]
+  },
+  "development_facts_used_to_freeze_protocol": {
+    "canonical_native_mae": 0.3280,
+    "canonical_dark_mae": 0.3684,
+    "canonical_dark_paired_drift": 0.1695,
+    "style_augmented_native_mae": 0.3302,
+    "style_augmented_dark_mae": 0.3320,
+    "style_augmented_dark_paired_drift": 0.0518,
+    "augmented_consistency_dark_paired_drift": 0.0334,
+    "numeric_histgb_mae": 0.3181
+  }
+}
