@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "Please cite the accepted paper if you use this code."
+title: "Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?"
+authors:
+  - family-names: Zhou
+    given-names: Jeffrey
+    affiliation: California Institute of Technology
+type: software
+repository-code: "https://github.com/jsz-05/same-market-different-pixels"
+url: "https://jsz-05.github.io/same-market-different-pixels/"
+abstract: "Code, tests, protocols, and summary results for the accepted ICAIF 2026 study of chart-renderer sensitivity in financial vision models."

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Methods, figures, and results from a study of chart-renderer sensitivity and invariance training in financial vision models.">
+  <meta name="author" content="Jeffrey Zhou">
+  <meta property="og:title" content="Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?">
+  <meta property="og:description" content="Research on chart-renderer sensitivity and invariance training in financial vision models.">
+  <meta property="og:image" content="https://jsz-05.github.io/same-market-different-pixels/assets/chart-styles.png">
+  <meta property="og:url" content="https://jsz-05.github.io/same-market-different-pixels/">
+  <link rel="canonical" href="https://jsz-05.github.io/same-market-different-pixels/">
+  <link rel="stylesheet" href="site.css?v=2">
+  <title>Same Market, Different Pixels — Jeffrey Zhou</title>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?</h1>
+      <p>Jeffrey Zhou<br>California Institute of Technology</p>
+      <p>
+        <a href="https://github.com/jsz-05/same-market-different-pixels">Code</a>
+        · <a href="https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/results">Results</a>
+        · <a href="https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/protocol">Protocols</a>
+      </p>
+    </header>
+
+    <h2>Overview</h2>
+    <p>A price chart is not the market. Dark mode, a different color convention,
+      or a charting-library update can change the pixels without changing a single
+      price or volume observation. If an AI model uses those pixels to forecast
+      risk, should its prediction change?</p>
+    <p>We study small neural networks that forecast next-week volatility from
+      candlestick charts. Rather than compare unrelated light- and dark-chart
+      datasets, we redraw every market window and directly compare its forecasts.
+      This reveals a failure that ordinary forecasting accuracy can miss. We then
+      test whether style augmentation and prediction-consistency training repair
+      it, and how far that repair transfers to unfamiliar charting software.</p>
+
+    <figure>
+      <a href="assets/chart-styles.png">
+        <img src="assets/chart-styles.png" width="2200" height="514"
+          alt="The same SPY price-and-volume window in five chart styles: canonical, reversed, dark, monochrome, and held-out blue-orange.">
+      </a>
+      <figcaption>Figure 1. The same SPY window ending March 20, 2020, rendered in
+        five styles. The first four are training presets; the blue/orange
+        composition is held out from those presets and changes the price padding.
+        This is real historical market data, not a generated price path. All
+        figures can be clicked to view them at full size.</figcaption>
+    </figure>
+
+    <h2>Task and experimental setup</h2>
+    <p>Each input is a 64 × 64 image containing 20 daily open, high, low, close,
+      and volume observations. The target is log annualized realized volatility
+      over the next five trading sessions: a continuous measure of the size of
+      subsequent price moves. Weekly forecast origins keep the five-session
+      target horizons from overlapping.</p>
+    <p>The main panel contains 37 exchange-traded funds (ETFs) spanning equities,
+      bonds, commodities, real estate, sectors, and currencies. There are 29,600
+      fitting examples and 1,036 final-test windows, with 28 test dates per asset
+      in January–July 2026. The model and renderer choices were developed using
+      2022–2025 outcomes. The protocol was fixed in August before the 2026 outcomes
+      were retrieved and scored. This is a historical holdout, not a forecast
+      issued before those market dates or an independently verified public
+      preregistration.</p>
+    <p>Charts omit ticker names, dates, and absolute-price labels. Prices use a
+      fixed transformation relative to the first close, rather than stretching
+      every window to fill its own vertical range. This preserves information
+      about the magnitude of price moves. Every paired renderer receives the
+      same adjusted prices and volume observations.</p>
+
+    <h3>What is compared?</h3>
+    <ul>
+      <li><strong>Canonical training:</strong> train on one standard light chart.</li>
+      <li><strong>Style augmentation:</strong> train on randomly selected light,
+        reversed-color, dark, and monochrome presets.</li>
+      <li><strong>Paired consistency:</strong> supervise the standard view and
+        penalize prediction disagreement with a second rendering.</li>
+      <li><strong>Randomized rendering + consistency:</strong> supervise two
+        views, vary their styles and price padding, and penalize disagreement.</li>
+    </ul>
+    <p>The primary convolutional neural network, TinyCNN, has 89,473 trainable
+      parameters. A 381,337-parameter residual network tests whether the result
+      depends on architecture. Other controls include an edge-only image model,
+      grayscale/background normalization, and output calibration. Numerical
+      models receive 111 features using only information available at the
+      forecast origin, from the identical market window. They do not receive
+      additional market information.</p>
+    <p>Image models are trained for ten epochs with three fixed random seeds.
+      There are no pretrained weights, large language model calls, paid APIs,
+      or external GPU clusters. The study was run on an M4 Pro laptop with 24 GB
+      of unified memory.</p>
+
+    <h2>Forecast accuracy is not renderer stability</h2>
+    <p>On its native chart style, the canonical TinyCNN has mean absolute error
+      (MAE) of 0.355 in log volatility and Spearman rank correlation of 0.827.
+      Changing only the renderer to dark mode raises its MAE to 0.731. The
+      randomized-consistency model has similar native error, 0.358, and dark-view
+      error of 0.360. Repairing renderer sensitivity does not require a large
+      loss of forecasting accuracy here.</p>
+
+    <figure>
+      <a href="assets/forecast-performance.png">
+        <img src="assets/forecast-performance.png" width="1575" height="715"
+          alt="Forecasting error and rank correlation across models under canonical, dark, and held-out chart styles. Canonical CNN and ResNet errors rise in dark mode; repaired models remain more stable.">
+      </a>
+      <figcaption>Figure 2. Forecast performance for three-seed ensembles. Lower
+        MAE and higher Spearman rank correlation are better. HistGB is histogram
+        gradient boosting; RV(5) is five-session volatility persistence. Numerical
+        models appear once because their inputs have no renderer.</figcaption>
+    </figure>
+
+    <p>The numerical gradient-boosting baseline achieves 0.345 MAE, slightly
+      better than the native image models, and cannot react to chart cosmetics.
+      The result is not that image models are always preferable. It is that a
+      useful image forecast can still carry an avoidable source of operational
+      instability.</p>
+
+    <h2>Measuring and repairing prediction drift</h2>
+    <p><strong>Paired drift</strong> is the mean absolute change in predicted
+      log volatility between two renderings of the same market window.
+      <strong>Alert flips</strong> count how often those predictions fall on
+      opposite sides of a fixed high-volatility threshold. The threshold is the
+      fitting targets' 80th percentile; it is not selected using final-test
+      outcomes. Unlike a change in aggregate error, paired drift cannot cancel
+      upward and downward forecast movements.</p>
+
+    <figure class="compact-figure">
+      <a href="assets/renderer-drift.png">
+        <img src="assets/renderer-drift.png" width="768" height="540"
+          alt="Bars show lower renderer drift after augmentation or consistency training. The randomized-consistency method has the lowest drift on all four alternate styles, but held-out drift remains appreciable.">
+      </a>
+      <figcaption>Figure 3. Drift from the canonical view, averaged over three
+        independently trained seeds. Whiskers are 95% calendar-date
+        cluster-bootstrap intervals. Dark-view drift falls from 0.727 to 0.043,
+        a 94.1% reduction. The custom held-out composition is harder: drift falls
+        from 0.193 to 0.155.</figcaption>
+    </figure>
+
+    <p>The headline ensemble results average the three models' forecasts before
+      measuring drift, whereas Figure 3 averages each model's drift. These are
+      different quantities. For the ensemble, dark-view drift falls from 0.705
+      to 0.029 and alert flips from 42.8% to 1.8%. Its 95th-percentile dark-view
+      shift falls from 1.658 to 0.065, so the improvement also reaches the tail
+      of the forecast changes.</p>
+
+    <figure>
+      <a href="assets/invariance-scatter.png">
+        <img src="assets/invariance-scatter.png" width="1573" height="968"
+          alt="Four scatter plots compare each ensemble's canonical prediction with its prediction after redrawing. Consistency training moves dark-view points toward the diagonal; held-out predictions retain a systematic shift. Red points change alert decisions.">
+      </a>
+      <figcaption>Figure 4. Each point represents one final-test market window.
+        The horizontal axis is its forecast under the canonical renderer and
+        the vertical axis its forecast after redrawing. The dashed diagonal
+        marks identical predictions; dotted lines mark the fixed alert threshold.
+        Red points change the alert decision. The repaired dark-view cloud is
+        close to the diagonal, while the held-out view retains a visible shift.
+        RV means realized volatility.</figcaption>
+    </figure>
+
+    <p>The architecture check gives the same warning. A canonically trained
+      residual network has native MAE of 0.356 but dark-view MAE of 1.267 and
+      80.1% alert flips. Randomized-consistency training reduces dark-view error
+      to 0.357 and flips to 1.8%. More model capacity does not remove the need
+      to test renderer changes.</p>
+
+    <h2>Do simpler fixes work?</h2>
+    <p>Grayscale/background normalization converts both chart views to
+      grayscale, accounts for light or dark borders, and normalizes contrast.
+      Affine calibration fits a separate scale and offset for canonical and
+      dark-view predictions using only 2022–2025 data. Neither requires
+      retraining the neural network.</p>
+    <table>
+      <caption>Custom dark-style comparison using ensemble predictions</caption>
+      <thead><tr><th scope="col">Method</th><th scope="col">Drift</th><th scope="col">Alert flips</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Canonical model</th><td>0.705</td><td>42.8%</td></tr>
+        <tr><th scope="row">+ grayscale normalization</th><td>0.062</td><td>3.0%</td></tr>
+        <tr><th scope="row">+ affine calibration</th><td>0.242</td><td>7.6%</td></tr>
+        <tr><th scope="row">Randomized + consistency</th><td>0.029</td><td>1.8%</td></tr>
+      </tbody>
+    </table>
+    <p>Normalization is a strong cheap remedy: its dark-view MAE is 0.359.
+      Consistency training is more stable in this comparison, but the simple
+      fix is useful and should not be dismissed. An edge-only image
+      representation also helps, without making predictions fully invariant.</p>
+
+    <h2>Independent renderers and the 100-stock check</h2>
+    <p>Testing only our own presets would make the repair look too complete.
+      Three additional chart compositions use two mplfinance themes and one
+      Plotly renderer. They rasterize at 192 pixels before an antialiased
+      downsample, with different candle widths, line widths, and price-to-volume
+      layouts outside the custom renderer family. These are post-protocol stress
+      tests, not part of the original frozen comparison.</p>
+    <table>
+      <caption>Independent charting software: the highest-drift renderer for each method</caption>
+      <thead><tr><th scope="col">Method</th><th scope="col">Drift</th><th scope="col">Alert flips</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Canonical model</th><td>0.543</td><td>15.3%</td></tr>
+        <tr><th scope="row">+ grayscale normalization</th><td>0.527</td><td>14.0%</td></tr>
+        <tr><th scope="row">Randomized + consistency</th><td>0.347</td><td>19.8%</td></tr>
+        <tr><th scope="row">+ grayscale normalization</th><td>0.407</td><td>26.3%</td></tr>
+      </tbody>
+    </table>
+    <p>Each row selects its renderer separately by highest mean drift. The flip
+      rate is for that selected renderer, not the maximum flip rate over all
+      renderers. Raw consistency training reduces worst drift by 36.1%, with
+      a 95% calendar-week bootstrap interval of [0.168, 0.227] for the absolute
+      reduction. It does not reduce alert flips at those selected renderers.
+      Adding normalization is not uniformly helpful either. Lower average
+      drift and more stable threshold decisions are distinct goals.</p>
+    <p>We separately refit the canonical and randomized-consistency models on
+      100 individual stocks from the contemporary S&amp;P 100 roster. Dark-view
+      drift falls from 0.466 to 0.017, alert flips from 54.0% to 1.4%, and
+      dark-view MAE from 0.516 to 0.363. The 95% calendar-week bootstrap interval
+      for the absolute drift reduction is [0.428, 0.470]. This supports the
+      dark-mode finding beyond the ETF panel, while remaining a post-protocol
+      replication with current-constituent selection and unequal stock histories.</p>
+
+    <h2>What the study does and does not establish</h2>
+    <p>The practical lesson is to validate chart models with paired redraws,
+      not just one theme's forecasting score. Before an interface or charting
+      library changes, keep a set of structured market windows, render them
+      through both versions, and check forecast drift and alert decisions.
+      Include an untouched renderer in acceptance testing and compare against
+      a numerical model using the same observations.</p>
+    <ul>
+      <li><strong>Generalization is partial.</strong> Three independent
+        compositions do not represent every deployment renderer, and residual
+        drift remains substantial.</li>
+      <li><strong>The test has only 28 weekly dates.</strong> Uncertainty is
+        clustered by calendar origin, rather than treating all 1,036 ETF windows
+        as independent. The analysis uses 2,000 bootstrap draws.</li>
+      <li><strong>The implemented geometry range is narrower than intended.</strong>
+        Pixel quantization collapses the planned candle-body-width randomization
+        to one width. Effective continuous randomization varies price padding.
+        The held-out custom padding also lies inside that sampled range.</li>
+      <li><strong>Not every redraw is recoverable from pixels alone.</strong>
+        Without axis labels or renderer metadata, scale changes can be confused
+        with smaller market moves after rasterization.</li>
+      <li><strong>Robustness is not trading performance.</strong> The task is
+        daily-bar volatility forecasting, not next-return prediction,
+        microstructure modeling, or transaction-cost-adjusted trading profit.</li>
+    </ul>
+
+    <h2>Code, results, and reproduction</h2>
+    <p>The public repository contains the chart renderers, downloads, model
+      training, analysis, tests, study protocols, and summary CSVs. Full
+      per-renderer and per-seed comparisons and bootstrap summaries are included.
+      Raw provider data, model weights, and individual predictions are not.</p>
+    <p>Use Python 3.12. After cloning the repository, the basic setup and main
+      experiment are:</p>
+    <pre><code>python3.12 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+make test
+make download
+make study
+make analysis</code></pre>
+    <p>The extension commands are <code>make external-validation</code>,
+      <code>make stock-replication</code>, and <code>make extension-analysis</code>.
+      Image training uses Apple Metal Performance Shaders (MPS) when available
+      and otherwise CPU. External rendering requires Chrome for Kaleido.
+      Re-downloaded provider data and current stock constituents can differ
+      from the recorded retrieval manifests. Generated data, weights, and
+      predictions stay local and are ignored by Git. See the
+      <a href="https://github.com/jsz-05/same-market-different-pixels#run">README</a>
+      for the pipeline and the
+      <a href="https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/protocol">protocol files</a>
+      for the exact settings.</p>
+
+    <h2>Citation</h2>
+    <p>Jeffrey Zhou. 2026. <em>Same Market, Different Pixels: Can Invariance
+      Training Repair Financial Vision Models?</em> ICAIF 2026.</p>
+  </main>
+</body>
+</html>
