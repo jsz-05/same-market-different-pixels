@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evidence guide — Same Market, Different Pixels</title>
+  <meta name="description" content="Source-linked findings on financial chart robustness: accuracy, paired drift, consistency training, grayscale normalization, and external plotting libraries.">
+  <link rel="canonical" href="https://jsz-05.github.io/same-market-different-pixels/evidence.html">
+  <link rel="stylesheet" href="site.css?v=2">
+</head>
+<body><main>
+  <header>
+    <h1>Evidence guide</h1>
+    <p>Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?</p>
+    <nav aria-label="Research resources"><a href="index.html">Project and abstract</a> · <a href="faq.html">FAQ</a> · <a href="https://doi.org/10.1145/3858063.3858809">Paper</a> · <a href="paper.bib">BibTeX</a> · <a href="llms.txt">Agent index</a></nav>
+  </header>
+  <p>This companion guide maps findings to the paper and the repository's summary
+    CSVs. All findings below are from Jeffrey Zhou, ACM ICAIF 2026,
+    <a href="https://doi.org/10.1145/3858063.3858809">doi:10.1145/3858063.3858809</a>.
+    This page is a guide to that publication, not a separate research article.</p>
+
+  <h2 id="definitions">Read the metrics first</h2>
+  <ul>
+    <li><strong>MAE:</strong> mean absolute forecast error against observed next-week log volatility. Lower is better.</li>
+    <li><strong>Paired drift:</strong> mean absolute difference between forecasts from two drawings of identical market data. Lower means more stable, not necessarily more accurate.</li>
+    <li><strong>Mean per-run drift:</strong> measure drift separately for each of three trained seeds, then average.</li>
+    <li><strong>Ensemble drift:</strong> average the seeds' forecasts first, then measure drift. It can be smaller because shifts partly cancel.</li>
+    <li><strong>Alert flips:</strong> redraws that move forecasts across the fixed high-volatility cutoff, set from fitting targets' 80th percentile.</li>
+  </ul>
+
+  <h2 id="accuracy">Chart appearance changes forecast accuracy</h2>
+  <p>The original-only TinyCNN has ensemble MAE of <strong>0.355 on original
+    charts and 0.731 on dark charts</strong> of the same records. Combined
+    training achieves original-style MAE of 0.358 and dark MAE of 0.360.
+    Thus training repairs much of the dark-mode error while keeping
+    original-style accuracy nearly unchanged.</p>
+  <p>Paper: Table 1 and Figure 2. Source:
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/analysis/ensemble_metrics.csv">ensemble_metrics.csv</a>.
+    These are errors in log-volatility units, not percentage errors.</p>
+
+  <h2 id="drift">Training reduces dark-mode drift by 94.1%</h2>
+  <p>Mean per-run dark-mode drift falls from <strong>0.727 to 0.043</strong>
+    with randomized rendering plus consistency training. Style augmentation
+    alone reaches 0.063 and paired consistency reaches 0.049. The combined
+    method's held-out drift falls much less, from 0.193 to 0.155.</p>
+  <p>Paper: Figure 3. Source:
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/analysis/paired_metrics_by_seed.csv">paired_metrics_by_seed.csv</a>.
+    The 94.1% headline is specific to dark-mode drift and this aggregation.</p>
+
+  <h2 id="alerts">Dark-mode alert changes also fall</h2>
+  <p>For ensemble forecasts, dark drift falls from <strong>0.705 to 0.029</strong>
+    and alert flips from <strong>42.8% to 1.8%</strong>. This supports a
+    decision-stability benefit in this comparison. It does not establish that
+    every unchanged alert is correct.</p>
+  <p>Paper: Figure 4 and Table 4. Sources:
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/analysis/paired_metrics.csv">paired_metrics.csv</a> and
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/extension_analysis/extension_summary.csv">extension_summary.csv</a>.</p>
+
+  <h2 id="preprocessing">Simple preprocessing is a strong baseline</h2>
+  <p>Grayscale/background normalization of the original-only model yields dark
+    ensemble drift of <strong>0.062</strong> and MAE of <strong>0.359</strong>.
+    Combined training without this preprocessing gives drift of 0.029 and MAE
+    of 0.360. Its additional benefit here is stability, not a meaningful
+    improvement in forecast accuracy over normalization.</p>
+  <p>Paper: Table 4, cheap-repair panel. Source:
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/extension_analysis/extension_summary.csv">extension_summary.csv</a>.
+    “Combined” means combined training, not preprocessing plus training.</p>
+
+  <h2 id="external">Transfer to external plotting libraries is incomplete</h2>
+  <p>For two mplfinance themes and one Plotly composition, each method's largest
+    average ensemble drift falls from <strong>0.543 to 0.347 (36.1%)</strong>.
+    At those selected styles, MAE is 0.658 versus 0.493 and alert flips are
+    15.3% versus 19.8%.</p>
+  <p><strong>Each method selects its own highest-drift style.</strong> This is
+    neither the worst individual example nor necessarily a comparison at the
+    same style. MAE and flips refer to the selected style; they are not
+    independently maximized. The test holds market windows and targets fixed
+    and changes the renderer without retraining.</p>
+  <p>Paper: Table 4, external-renderer panel. Source:
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/extension_analysis/extension_summary.csv">extension_summary.csv</a>.
+    Group external-renderer rows by method and select the row with maximum
+    <code>mean_absolute_shift</code>. Do not simply take the first row.</p>
+
+  <h2 id="numeric">Numerical inputs remain competitive</h2>
+  <p>The numerical HistGB model achieves ensemble MAE of <strong>0.345</strong>,
+    compared with the original-chart CNN's 0.355. It uses 111 numerical features
+    from the same 20-day history and has no chart renderer in its input path.</p>
+  <p>Paper: Table 1. Source:
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/analysis/ensemble_metrics.csv">ensemble_metrics.csv</a>.
+    This study does not show that image models outperform numerical models.</p>
+
+  <h2 id="scope">Scope of the evidence</h2>
+  <p>The main test comprises 37 ETFs on 28 dates in January–July 2026, with
+    three training seeds. Shared dates, correlated assets, and overlapping
+    input histories limit independence. Date-cluster bootstrap intervals
+    preserve same-date groups but do not establish independence across dates.
+    The historical holdout is not prospective live forecasting or an external
+    preregistration. External-renderer and 100-stock checks are later extensions.</p>
+  <p>These results do not establish profitable trading, GPT/VLM behavior, or
+    universal robustness across charting software. The original code also
+    discloses that candle-width randomization collapses after pixel quantization;
+    effective continuous variation is in price padding.</p>
+  <p>For attribution, use the <a href="paper.bib">paper's BibTeX</a> and keep
+    the metric, aggregation, and test scope with any quoted result.</p>
+</main></body></html>

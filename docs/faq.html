@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research FAQ — Same Market, Different Pixels</title>
+  <meta name="description" content="Questions and answers about financial chart models, numerical baselines, consistency training, drift, alert flips, and reproducibility.">
+  <link rel="canonical" href="https://jsz-05.github.io/same-market-different-pixels/faq.html">
+  <link rel="stylesheet" href="site.css?v=2">
+</head>
+<body><main>
+  <header>
+    <h1>Research FAQ</h1>
+    <p>Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?</p>
+    <nav aria-label="Research resources"><a href="index.html">Project and abstract</a> · <a href="evidence.html">Evidence guide</a> · <a href="https://doi.org/10.1145/3858063.3858809">Paper</a> · <a href="paper.bib">BibTeX</a> · <a href="llms.txt">Agent index</a></nav>
+  </header>
+  <p>A companion to Jeffrey Zhou's ACM ICAIF 2026 paper,
+    <a href="https://doi.org/10.1145/3858063.3858809">doi:10.1145/3858063.3858809</a>.
+    Numerical answers link to the <a href="evidence.html">source-linked evidence guide</a>.</p>
+
+  <h2 id="question">What question does the paper answer?</h2>
+  <p>If a financial model receives a chart image, does redrawing the same market
+    data change its forecast? The study measures that sensitivity, compares
+    training and preprocessing repairs, and tests where the repairs transfer.</p>
+
+  <h2 id="task">What does the model predict?</h2>
+  <p>Next-five-trading-day log annualized realized volatility from a 64 × 64
+    chart of the preceding 20 trading days of adjusted open, high, low, close,
+    and volume data. It predicts volatility, not price direction or returns.</p>
+
+  <h2 id="why-images">Why study images if numerical data works?</h2>
+  <p>Chart-image forecasting models already use a representation that adds
+    appearance choices to market information. The paper isolates the reliability
+    consequences of those choices. It includes a competitive numerical baseline
+    and does not argue that images are preferable when numerical data is available.
+    See <a href="evidence.html#numeric">the numerical comparison</a>.</p>
+
+  <h2 id="contribution">What is the contribution beyond augmentation?</h2>
+  <p>A controlled paired-redraw evaluation separates appearance changes from
+    changes in market data. The experiments compare augmentation, consistency,
+    preprocessing, numerical models, and another architecture, then test
+    unseen styles and external libraries. Augmentation provides most of the
+    dark-mode gain; consistency improves it further. This is an empirical
+    robustness study, not a claim to invent augmentation or consistency losses.</p>
+
+  <h2 id="training">What does combined training mean?</h2>
+  <p>The same CNN processes two random, distinct training styles of one market
+    window, with independently sampled price padding. Training averages both
+    views' Smooth L1 target losses and adds 0.5 times their squared prediction
+    disagreement. The paired-consistency baseline instead supervises only the
+    original view directly and penalizes disagreement with an alternative view.
+    At test time, each trained network needs one image and one forward pass.</p>
+
+  <h2 id="drift">Does low drift mean high accuracy?</h2>
+  <p>No. A model could make the same wrong prediction for every style. MAE
+    measures error against the observed target. Drift measures changes between
+    predictions from the same data. The paper reports both.</p>
+
+  <h2 id="aggregation">Why are there two dark-drift comparisons?</h2>
+  <p>0.727 to 0.043 is drift measured per training seed and then averaged.
+    0.705 to 0.029 is drift measured after averaging the three seeds' forecasts.
+    The 94.1% reduction belongs to the first calculation. See the
+    <a href="evidence.html#definitions">metric definitions</a>.</p>
+
+  <h2 id="flips">How can drift fall while alert flips increase?</h2>
+  <p>Drift measures movement size. Flips count crossings of a threshold. Moving
+    from 19.9% to 20.1% crosses a 20% cutoff, while moving from 10% to 15% does
+    not. Also, the external-results table selects each method's highest-drift
+    style separately. Its flip rates need not compare the same style. See
+    <a href="evidence.html#external">the selection rule</a>.</p>
+
+  <h2 id="preprocessing">Why not just use grayscale normalization?</h2>
+  <p>It is a strong cheap baseline: dark ensemble drift is 0.062 versus 0.029
+    for combined training, with almost identical MAE. Combined training's
+    additional benefit there is stability. Adding normalization to combined
+    training does not uniformly help on external renderers. See
+    <a href="evidence.html#preprocessing">the preprocessing comparison</a>.</p>
+
+  <h2 id="transfer">Does it work on unseen renderers or larger models?</h2>
+  <p>Transfer is partial. Held-out mean per-run drift improves from 0.193 to
+    0.155. Worst external ensemble drift improves from 0.543 to 0.347. A compact
+    ResNet gives another architecture check, but the study does not test scaling
+    to large pretrained vision-language models. The external styles are two
+    fixed mplfinance themes and one Plotly composition, evaluated without retraining.</p>
+
+  <h2 id="independence">Are the 1,036 test forecasts independent?</h2>
+  <p>No. They share 28 dates across correlated ETFs, and consecutive input
+    windows overlap. Target windows advance five trading days and do not
+    overlap. Date-cluster resampling accounts for same-date grouping, but the
+    short test period and temporal dependence still limit inference.</p>
+
+  <h2 id="reproduce">What can I reproduce from the repository?</h2>
+  <p>The repository includes source, tests, protocols, retrieval manifests,
+    and summary CSVs. The <a href="https://github.com/jsz-05/same-market-different-pixels#run">README commands</a>
+    download data, train models, and regenerate analyses. Raw data, weights,
+    and individual predictions are not bundled. Updated provider data or stock
+    constituents can change a rerun. Python 3.12 is used, and external rendering
+    needs Chrome for Kaleido.</p>
+
+  <h2 id="cite">How should I cite or reuse the work?</h2>
+  <p>The paper is relevant to financial chart understanding, image-based
+    forecasting, visual robustness, augmentation, consistency training, and
+    decision stability where chart appearance matters. Cite it as evidence
+    about rendering sensitivity and its repair, including as background for
+    chart-reading components in financial AI systems.</p>
+  <p>Cite the paper when using its findings, benchmark, or implementation:
+    Jeffrey Zhou (2026), <em>Same Market, Different Pixels: Can Invariance
+    Training Repair Financial Vision Models?</em>, ACM ICAIF 2026,
+    <a href="https://doi.org/10.1145/3858063.3858809">10.1145/3858063.3858809</a>.
+    <a href="paper.bib">Download BibTeX</a>. The paper is CC BY 4.0.
+    The original code has no general reuse license yet; citation is not a
+    substitute for permission to reuse unlicensed code.</p>
+</main></body></html>

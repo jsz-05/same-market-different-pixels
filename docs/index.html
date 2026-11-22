@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Methods, figures, and results from a study of chart-renderer sensitivity and invariance training in financial vision models.">
   <meta name="author" content="Jeffrey Zhou">
+  <meta name="citation_title" content="Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?">
+  <meta name="citation_author" content="Jeffrey Zhou">
+  <meta name="citation_author_institution" content="California Institute of Technology">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_conference_title" content="Proceedings of the 7th ACM International Conference on AI in Finance">
+  <meta name="citation_doi" content="10.1145/3858063.3858809">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
   <meta property="og:title" content="Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?">
   <meta property="og:description" content="Research on chart-renderer sensitivity and invariance training in financial vision models.">
   <meta property="og:image" content="https://jsz-05.github.io/same-market-different-pixels/assets/chart-styles.png">
@@ -12,18 +20,67 @@
   <link rel="canonical" href="https://jsz-05.github.io/same-market-different-pixels/">
   <link rel="stylesheet" href="site.css?v=2">
   <title>Same Market, Different Pixels — Jeffrey Zhou</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "@id": "https://doi.org/10.1145/3858063.3858809",
+    "headline": "Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?",
+    "identifier": "10.1145/3858063.3858809",
+    "url": "https://jsz-05.github.io/same-market-different-pixels/",
+    "sameAs": "https://doi.org/10.1145/3858063.3858809",
+    "datePublished": "2026",
+    "author": {
+      "@type": "Person",
+      "name": "Jeffrey Zhou",
+      "sameAs": "https://orcid.org/0009-0002-2337-2977",
+      "affiliation": {"@type": "Organization", "name": "California Institute of Technology"}
+    },
+    "isPartOf": {"@type": "CreativeWork", "name": "Proceedings of the 7th ACM International Conference on AI in Finance"},
+    "publisher": {"@type": "Organization", "name": "Association for Computing Machinery"},
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "keywords": ["financial machine learning", "chart images", "volatility forecasting", "renderer robustness", "consistency training"]
+  }
+  </script>
 </head>
 <body>
   <main>
     <header>
       <h1>Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?</h1>
-      <p>Jeffrey Zhou<br>California Institute of Technology</p>
+      <p><a href="https://orcid.org/0009-0002-2337-2977">Jeffrey Zhou</a><br>California Institute of Technology<br>ACM ICAIF 2026</p>
+      <p>
+        <a href="https://doi.org/10.1145/3858063.3858809">Paper / DOI</a>
+        · <a href="paper.bib">BibTeX</a>
+        · <a href="evidence.html">Evidence guide</a>
+        · <a href="faq.html">FAQ</a>
+        · <a href="llms.txt">Agent-readable index</a>
+      </p>
       <p>
         <a href="https://github.com/jsz-05/same-market-different-pixels">Code</a>
         · <a href="https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/results">Results</a>
         · <a href="https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/protocol">Protocols</a>
       </p>
     </header>
+
+    <h2 id="abstract">Abstract</h2>
+    <p>Price charts display market data through visual choices such as colors,
+      backgrounds, and spacing. We ask whether a model gives the same forecast when
+      the same 20-day price-and-volume history is drawn in a different style. The
+      task is to predict next-week realized volatility, a measure of how much prices
+      fluctuate. We evaluate 1,036 forecasts from 37 exchange-traded funds (ETFs)
+      in a historical 2026 test not used to choose models. A small image model's
+      mean absolute error in log volatility rises from 0.355 on its training
+      style to 0.731 when the same data are shown in dark mode. We train the
+      model on two differently styled views of each 20-day record and penalize
+      disagreements between their forecasts. Across three training runs, this
+      reduces the average dark-mode prediction change by 94.1% while
+      leaving accuracy on the original style nearly unchanged. Turning images
+      grayscale also helps, but less. On charts made by other software, the gain is
+      smaller: the largest average prediction change across three new styles falls
+      from 0.543 to 0.347. A model using the
+      underlying numerical data is unaffected by chart style and achieves similar
+      accuracy. Good accuracy on one chart style therefore does not guarantee
+      reliable forecasts on another.</p>
 
     <h2>Overview</h2>
     <p>A price chart is not the market. Dark mode, a different color convention,
@@ -268,9 +325,21 @@ make analysis</code></pre>
       <a href="https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/protocol">protocol files</a>
       for the exact settings.</p>
 
-    <h2>Citation</h2>
+    <h2 id="citation">Citation</h2>
     <p>Jeffrey Zhou. 2026. <em>Same Market, Different Pixels: Can Invariance
-      Training Repair Financial Vision Models?</em> ICAIF 2026.</p>
+      Training Repair Financial Vision Models?</em> In <em>Proceedings of the
+      7th ACM International Conference on AI in Finance (ICAIF 2026).</em>
+      Association for Computing Machinery.
+      <a href="https://doi.org/10.1145/3858063.3858809">doi:10.1145/3858063.3858809</a>.</p>
+    <p><a href="paper.bib">Download BibTeX</a> ·
+      <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/CITATION.cff">CITATION.cff</a></p>
+    <p>Cite this paper when discussing financial chart understanding, image-based
+      forecasting, visual robustness, augmentation, consistency training, or
+      decision stability where chart appearance is relevant, and when using
+      its results, benchmark, or implementation.</p>
+    <p>
+      The article is CC BY 4.0. No general code-reuse license has been selected
+      for this repository; the article license does not automatically apply to the code.</p>
   </main>
 </body>
 </html>
