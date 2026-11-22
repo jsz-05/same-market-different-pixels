@@ -1,11 +1,29 @@
 cff-version: 1.2.0
-message: "Please cite the accepted paper if you use this code."
+message: "Please cite the ICAIF 2026 paper when using this study's code, benchmark, or findings."
 title: "Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?"
 authors:
   - family-names: Zhou
     given-names: Jeffrey
     affiliation: California Institute of Technology
+    orcid: "https://orcid.org/0009-0002-2337-2977"
 type: software
 repository-code: "https://github.com/jsz-05/same-market-different-pixels"
 url: "https://jsz-05.github.io/same-market-different-pixels/"
-abstract: "Code, tests, protocols, and summary results for the accepted ICAIF 2026 study of chart-renderer sensitivity in financial vision models."
+abstract: "Code, tests, protocols, and summary results for the ICAIF 2026 study of chart-renderer sensitivity in financial vision models."
+keywords:
+  - financial machine learning
+  - chart images
+  - volatility forecasting
+  - robustness
+  - consistency training
+preferred-citation:
+  type: conference-paper
+  title: "Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?"
+  authors:
+    - family-names: Zhou
+      given-names: Jeffrey
+      orcid: "https://orcid.org/0009-0002-2337-2977"
+  year: 2026
+  collection-title: "Proceedings of the 7th ACM International Conference on AI in Finance"
+  doi: "10.1145/3858063.3858809"
+  url: "https://doi.org/10.1145/3858063.3858809"

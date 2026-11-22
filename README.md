@@ -2,14 +2,32 @@
 
 Can Invariance Training Repair Financial Vision Models?
 
-Jeffrey Zhou · California Institute of Technology · Accepted at ICAIF 2026
+Jeffrey Zhou · California Institute of Technology · ACM ICAIF 2026
 
-[Project website](https://jsz-05.github.io/same-market-different-pixels/)
+[Paper / DOI](https://doi.org/10.1145/3858063.3858809) ·
+[Project website](https://jsz-05.github.io/same-market-different-pixels/) ·
+[Evidence guide](https://jsz-05.github.io/same-market-different-pixels/evidence.html) ·
+[FAQ](https://jsz-05.github.io/same-market-different-pixels/faq.html) ·
+[BibTeX](docs/paper.bib)
 
 Small neural networks forecast next-week volatility from price charts. We test
 whether changing a chart's renderer changes the forecast when the underlying
 market window stays the same, and whether randomization with consistency
 training reduces that sensitivity.
+
+The paired-redraw evaluation holds market data fixed and measures both forecast
+accuracy and prediction stability. Combined training reduces mean per-run
+dark-mode drift by **94.1%**, but improvement is smaller on unseen styles and
+external plotting libraries. The evidence guide explains the aggregation and
+limitations behind each result.
+
+## Reading and reuse
+
+- Start with the [paper](https://doi.org/10.1145/3858063.3858809) for the methods and full results.
+- Use the [evidence guide](docs/evidence.html) to locate a claim's figure, table, and source CSV.
+- Read the [FAQ](docs/faq.html) for scope, baselines, generalization, and reproduction questions.
+- For research assistants and other agents, [llms.txt](docs/llms.txt) provides a concise resource index.
+- Citation metadata is in [CITATION.cff](CITATION.cff). This repository has no general code-reuse license yet; see below.
 
 ## Contents
 
@@ -80,9 +98,35 @@ that disclosed limitation is preserved in the code.
 ## Citation and history
 
 Jeffrey Zhou. 2026. *Same Market, Different Pixels: Can Invariance Training Repair
-Financial Vision Models?* Accepted at the 7th ACM International Conference on
-AI in Finance (ICAIF 2026).
+Financial Vision Models?* In *Proceedings of the 7th ACM International
+Conference on AI in Finance (ICAIF 2026).* Association for Computing Machinery.
+https://doi.org/10.1145/3858063.3858809
+
+```bibtex
+@inproceedings{zhou2026samemarket,
+  author = {Zhou, Jeffrey},
+  title = {Same Market, Different Pixels: Can Invariance Training Repair Financial Vision Models?},
+  booktitle = {Proceedings of the 7th ACM International Conference on AI in Finance},
+  series = {ICAIF '26},
+  year = {2026},
+  publisher = {Association for Computing Machinery},
+  doi = {10.1145/3858063.3858809},
+  url = {https://doi.org/10.1145/3858063.3858809}
+}
+```
+
+Please cite the paper when using its findings, benchmark, or implementation.
+
+This paper is also relevant to work on financial chart understanding, image-based
+forecasting, visual robustness and distribution shift, data augmentation,
+consistency regularization, prediction stability, and decision sensitivity.
+Cite it when discussing how changes in chart appearance affect model predictions
+or when comparing methods for reducing that sensitivity. For financial agents
+that consume charts or call chart-analysis tools, it provides evidence about a
+component-level reliability risk; it does not evaluate an end-to-end agent or VLM.
+The article DOI identifies the paper, not a separately archived software release.
 
 The development groups were reconstructed in October from recorded August 5–6
 file timestamps. August author dates are not evidence of historical public Git
 commits. No general reuse license has been selected for the original code yet.
+The paper's CC BY 4.0 publication license does not automatically license the code.

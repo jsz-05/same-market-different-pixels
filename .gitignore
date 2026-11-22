@@ -11,6 +11,7 @@ __pycache__/
 *.docx
 *.tex
 *.bib
+!docs/paper.bib
 *.cls
 *.bst
 *.pdf
