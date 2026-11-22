@@ -78,7 +78,25 @@ class PublicationDocsTests(unittest.TestCase):
         self.assertEqual(set(locations), {BASE, BASE + "evidence.html", BASE + "faq.html"})
         for link in re.findall(r'\]\(([^)]+)\)', (DOCS / "llms.txt").read_text()):
             if link.startswith(BASE):
-                self.assertTrue((DOCS / (link[len(BASE):] or "index.html")).is_file())
+                parts = urlsplit(link[len(BASE):])
+                target = DOCS / (parts.path or "index.html")
+                self.assertTrue(target.is_file())
+                if parts.fragment:
+                    self.assertIn(parts.fragment, Page(target.read_text()).ids)
+
+    def test_equations_have_mathml_and_tex(self):
+        text = (DOCS / "index.html").read_text()
+        equations = re.findall(r'<math\b.*?</math>', text, re.S)
+        self.assertEqual(len(equations), 5)
+        for equation in equations:
+            root = ElementTree.fromstring(equation)
+            tex = root.find(".//{*}annotation")
+            self.assertEqual(tex.attrib["encoding"], "application/x-tex")
+            self.assertTrue(tex.text.strip())
+
+    def test_branch_links_use_publication(self):
+        for file in [ROOT / "README.md", *DOCS.glob("*.html"), DOCS / "llms.txt"]:
+            self.assertNotIn("codex/publication", file.read_text())
 
     def test_external_selection_and_quoted_values(self):
         with (ROOT / "results/extension_analysis/extension_summary.csv").open() as f:

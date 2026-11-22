@@ -35,7 +35,7 @@
     Thus training repairs much of the dark-mode error while keeping
     original-style accuracy nearly unchanged.</p>
   <p>Paper: Table 1 and Figure 2. Source:
-    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/analysis/ensemble_metrics.csv">ensemble_metrics.csv</a>.
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/publication/results/analysis/ensemble_metrics.csv">ensemble_metrics.csv</a>.
     These are errors in log-volatility units, not percentage errors.</p>
 
   <h2 id="drift">Training reduces dark-mode drift by 94.1%</h2>
@@ -44,7 +44,7 @@
     alone reaches 0.063 and paired consistency reaches 0.049. The combined
     method's held-out drift falls much less, from 0.193 to 0.155.</p>
   <p>Paper: Figure 3. Source:
-    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/analysis/paired_metrics_by_seed.csv">paired_metrics_by_seed.csv</a>.
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/publication/results/analysis/paired_metrics_by_seed.csv">paired_metrics_by_seed.csv</a>.
     The 94.1% headline is specific to dark-mode drift and this aggregation.</p>
 
   <h2 id="alerts">Dark-mode alert changes also fall</h2>
@@ -53,8 +53,8 @@
     decision-stability benefit in this comparison. It does not establish that
     every unchanged alert is correct.</p>
   <p>Paper: Figure 4 and Table 4. Sources:
-    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/analysis/paired_metrics.csv">paired_metrics.csv</a> and
-    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/extension_analysis/extension_summary.csv">extension_summary.csv</a>.</p>
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/publication/results/analysis/paired_metrics.csv">paired_metrics.csv</a> and
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/publication/results/extension_analysis/extension_summary.csv">extension_summary.csv</a>.</p>
 
   <h2 id="preprocessing">Simple preprocessing is a strong baseline</h2>
   <p>Grayscale/background normalization of the original-only model yields dark
@@ -63,7 +63,7 @@
     of 0.360. Its additional benefit here is stability, not a meaningful
     improvement in forecast accuracy over normalization.</p>
   <p>Paper: Table 4, cheap-repair panel. Source:
-    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/extension_analysis/extension_summary.csv">extension_summary.csv</a>.
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/publication/results/extension_analysis/extension_summary.csv">extension_summary.csv</a>.
     “Combined” means combined training, not preprocessing plus training.</p>
 
   <h2 id="external">Transfer to external plotting libraries is incomplete</h2>
@@ -77,7 +77,7 @@
     independently maximized. The test holds market windows and targets fixed
     and changes the renderer without retraining.</p>
   <p>Paper: Table 4, external-renderer panel. Source:
-    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/extension_analysis/extension_summary.csv">extension_summary.csv</a>.
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/publication/results/extension_analysis/extension_summary.csv">extension_summary.csv</a>.
     Group external-renderer rows by method and select the row with maximum
     <code>mean_absolute_shift</code>. Do not simply take the first row.</p>
 
@@ -86,7 +86,7 @@
     compared with the original-chart CNN's 0.355. It uses 111 numerical features
     from the same 20-day history and has no chart renderer in its input path.</p>
   <p>Paper: Table 1. Source:
-    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/results/analysis/ensemble_metrics.csv">ensemble_metrics.csv</a>.
+    <a href="https://github.com/jsz-05/same-market-different-pixels/blob/publication/results/analysis/ensemble_metrics.csv">ensemble_metrics.csv</a>.
     This study does not show that image models outperform numerical models.</p>
 
   <h2 id="scope">Scope of the evidence</h2>

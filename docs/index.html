@@ -18,7 +18,7 @@
   <meta property="og:image" content="https://jsz-05.github.io/same-market-different-pixels/assets/chart-styles.png">
   <meta property="og:url" content="https://jsz-05.github.io/same-market-different-pixels/">
   <link rel="canonical" href="https://jsz-05.github.io/same-market-different-pixels/">
-  <link rel="stylesheet" href="site.css?v=2">
+  <link rel="stylesheet" href="site.css?v=3">
   <title>Same Market, Different Pixels — Jeffrey Zhou</title>
   <script type="application/ld+json">
   {
@@ -51,14 +51,15 @@
       <p>
         <a href="https://doi.org/10.1145/3858063.3858809">Paper / DOI</a>
         · <a href="paper.bib">BibTeX</a>
+        · <a href="#equations">Equations</a>
         · <a href="evidence.html">Evidence guide</a>
         · <a href="faq.html">FAQ</a>
         · <a href="llms.txt">Agent-readable index</a>
       </p>
       <p>
         <a href="https://github.com/jsz-05/same-market-different-pixels">Code</a>
-        · <a href="https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/results">Results</a>
-        · <a href="https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/protocol">Protocols</a>
+        · <a href="https://github.com/jsz-05/same-market-different-pixels/tree/publication/results">Results</a>
+        · <a href="https://github.com/jsz-05/same-market-different-pixels/tree/publication/protocol">Protocols</a>
       </p>
     </header>
 
@@ -83,10 +84,9 @@
       reliable forecasts on another.</p>
 
     <h2>Overview</h2>
-    <p>A price chart is not the market. Dark mode, a different color convention,
-      or a charting-library update can change the pixels without changing a single
-      price or volume observation. If an AI model uses those pixels to forecast
-      risk, should its prediction change?</p>
+    <p>Dark mode, a different color convention, or a charting-library update can
+      change a chart's appearance without changing its price and volume data.
+      We test how much those changes affect a model's volatility forecast.</p>
     <p>We study small neural networks that forecast next-week volatility from
       candlestick charts. Rather than compare unrelated light- and dark-chart
       datasets, we redraw every market window and directly compare its forecasts.
@@ -143,10 +143,65 @@
       models receive 111 features using only information available at the
       forecast origin, from the identical market window. They do not receive
       additional market information.</p>
-    <p>Image models are trained for ten epochs with three fixed random seeds.
-      There are no pretrained weights, large language model calls, paid APIs,
-      or external GPU clusters. The study was run on an M4 Pro laptop with 24 GB
-      of unified memory.</p>
+    <p>Image models are trained from scratch for ten epochs with three fixed
+      random seeds. The study was run on an M4 Pro system with 24 GB of unified memory.</p>
+
+    <h2 id="equations">Target, evaluation, and training equations</h2>
+    <h3>What the model predicts</h3>
+    <p>For record <i>i</i>, let <i>C</i><sub>i,0</sub> be the adjusted closing
+      price at the forecast date, and <i>C</i><sub>i,j</sub> the close on future
+      trading day <i>j</i>. Daily log return and the five-day target are:</p>
+    <div class="equation">
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <semantics><mrow><msub><mi>r</mi><mrow><mi>i</mi><mo>,</mo><mi>j</mi></mrow></msub><mo>=</mo><mi mathvariant="normal">log</mi><mo>(</mo><mfrac><msub><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>j</mi></mrow></msub><msub><mi>C</mi><mrow><mi>i</mi><mo>,</mo><mi>j</mi><mo>−</mo><mn>1</mn></mrow></msub></mfrac><mo>)</mo></mrow>
+        <annotation encoding="application/x-tex">r_{i,j}=\log(C_{i,j}/C_{i,j-1})</annotation></semantics>
+      </math>
+    </div>
+    <div class="equation">
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>=</mo><mi mathvariant="normal">log</mi><mo>(</mo><msqrt><mfrac><mn>252</mn><mn>5</mn></mfrac><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mn>5</mn></munderover><msubsup><mi>r</mi><mrow><mi>i</mi><mo>,</mo><mi>j</mi></mrow><mn>2</mn></msubsup></msqrt><mo>)</mo></mrow>
+        <annotation encoding="application/x-tex">y_i=\log\left(\sqrt{\frac{252}{5}\sum_{j=1}^{5}r_{i,j}^2}\right)</annotation></semantics>
+      </math>
+    </div>
+    <p>We square and sum the next five daily returns, annualize using 252 trading
+      days, take the square root, then the natural logarithm. These future
+      observations supply the training and evaluation target, never the input chart.</p>
+
+    <h3>Accuracy and stability answer different questions</h3>
+    <p>Let <i>p</i><sub>i,s</sub> be the log-volatility forecast for record
+      <i>i</i> drawn in style <i>s</i>, and let <i>s</i><sub>0</sub> denote the
+      original style. Across <i>N</i> test records:</p>
+    <div class="equation">
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <semantics><mrow><msub><mi mathvariant="normal">MAE</mi><mi>s</mi></msub><mo>=</mo><mfrac><mn>1</mn><mi>N</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mo>|</mo><msub><mi>p</mi><mrow><mi>i</mi><mo>,</mo><mi>s</mi></mrow></msub><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><mo>|</mo></mrow>
+        <annotation encoding="application/x-tex">\mathrm{MAE}_s=\frac{1}{N}\sum_{i=1}^{N}|p_{i,s}-y_i|</annotation></semantics>
+      </math>
+    </div>
+    <div class="equation">
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <semantics><mrow><msub><mi>D</mi><mi>s</mi></msub><mo>=</mo><mfrac><mn>1</mn><mi>N</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mo>|</mo><msub><mi>p</mi><mrow><mi>i</mi><mo>,</mo><mi>s</mi></mrow></msub><mo>−</mo><msub><mi>p</mi><mrow><mi>i</mi><mo>,</mo><msub><mi>s</mi><mn>0</mn></msub></mrow></msub><mo>|</mo></mrow>
+        <annotation encoding="application/x-tex">D_s=\frac{1}{N}\sum_{i=1}^{N}|p_{i,s}-p_{i,s_0}|</annotation></semantics>
+      </math>
+    </div>
+    <p>MAE compares forecasts with observed outcomes. Drift <i>D</i><sub>s</sub>
+      compares two forecasts of the same record. Absolute values prevent
+      positive and negative changes from canceling.</p>
+
+    <h3>How combined training encourages agreement</h3>
+    <p>The same CNN processes two drawings of one record. Its outputs
+      <i>p</i><sub>1</sub> and <i>p</i><sub>2</sub>, and their shared target
+      <i>t</i>, use standardized units based on the fitting data.</p>
+    <div class="equation">
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <semantics><mrow><mi mathvariant="script">L</mi><mo>=</mo><mfrac><mrow><mi>ℓ</mi><mo>(</mo><msub><mi>p</mi><mn>1</mn></msub><mo>,</mo><mi>t</mi><mo>)</mo><mo>+</mo><mi>ℓ</mi><mo>(</mo><msub><mi>p</mi><mn>2</mn></msub><mo>,</mo><mi>t</mi><mo>)</mo></mrow><mn>2</mn></mfrac><mo>+</mo><mn>0.5</mn><msup><mrow><mo>(</mo><msub><mi>p</mi><mn>1</mn></msub><mo>−</mo><msub><mi>p</mi><mn>2</mn></msub><mo>)</mo></mrow><mn>2</mn></msup></mrow>
+        <annotation encoding="application/x-tex">\mathcal{L}=\frac{\ell(p_1,t)+\ell(p_2,t)}{2}+0.5(p_1-p_2)^2</annotation></semantics>
+      </math>
+    </div>
+    <p>The first term averages both views' forecast losses. The second penalizes
+      disagreement. Here ℓ is Smooth L1 loss: for error <i>e</i> = <i>p</i> − <i>t</i>,
+      it is 0.5<i>e</i><sup>2</sup> when |<i>e</i>| &lt; 1 and |<i>e</i>| − 0.5 otherwise.
+      Both passes update the same weights. The paired-consistency baseline uses
+      only the original view's forecast loss in the first term.</p>
 
     <h2>Forecast accuracy is not renderer stability</h2>
     <p>On its native chart style, the canonical TinyCNN has mean absolute error
@@ -322,7 +377,7 @@ make analysis</code></pre>
       predictions stay local and are ignored by Git. See the
       <a href="https://github.com/jsz-05/same-market-different-pixels#run">README</a>
       for the pipeline and the
-      <a href="https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/protocol">protocol files</a>
+      <a href="https://github.com/jsz-05/same-market-different-pixels/tree/publication/protocol">protocol files</a>
       for the exact settings.</p>
 
     <h2 id="citation">Citation</h2>
@@ -332,7 +387,7 @@ make analysis</code></pre>
       Association for Computing Machinery.
       <a href="https://doi.org/10.1145/3858063.3858809">doi:10.1145/3858063.3858809</a>.</p>
     <p><a href="paper.bib">Download BibTeX</a> ·
-      <a href="https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/CITATION.cff">CITATION.cff</a></p>
+      <a href="https://github.com/jsz-05/same-market-different-pixels/blob/publication/CITATION.cff">CITATION.cff</a></p>
     <p>Cite this paper when discussing financial chart understanding, image-based
       forecasting, visual robustness, augmentation, consistency training, or
       decision stability where chart appearance is relevant, and when using

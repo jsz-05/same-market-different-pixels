@@ -12,8 +12,9 @@ California Institute of Technology. Year: 2026.
 
 - [Paper / DOI](https://doi.org/10.1145/3858063.3858809): Canonical publication.
 - [Project page and abstract](https://jsz-05.github.io/same-market-different-pixels/): Methods, figures, findings, and limitations.
+- [Equations and definitions](https://jsz-05.github.io/same-market-different-pixels/#equations): Volatility target, forecast error, paired drift, and the combined training loss.
 - [BibTeX](https://jsz-05.github.io/same-market-different-pixels/paper.bib): Citation for the paper.
-- [CITATION.cff](https://github.com/jsz-05/same-market-different-pixels/blob/codex/publication/CITATION.cff): Software metadata and preferred paper citation.
+- [CITATION.cff](https://github.com/jsz-05/same-market-different-pixels/blob/publication/CITATION.cff): Software metadata and preferred paper citation.
 
 ## Evidence and questions
 
@@ -35,8 +36,8 @@ can differ. The evidence guide preserves those distinctions.
 ## Code and reproduction
 
 - [Repository and setup](https://github.com/jsz-05/same-market-different-pixels): Python code, tests, and commands.
-- [Summary results](https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/results): Per-seed, ensemble, and extension CSVs.
-- [Protocols and manifests](https://github.com/jsz-05/same-market-different-pixels/tree/codex/publication/protocol): Study settings and recorded data retrievals.
+- [Summary results](https://github.com/jsz-05/same-market-different-pixels/tree/publication/results): Per-seed, ensemble, and extension CSVs.
+- [Protocols and manifests](https://github.com/jsz-05/same-market-different-pixels/tree/publication/protocol): Study settings and recorded data retrievals.
 
 ## Scope and attribution
 
